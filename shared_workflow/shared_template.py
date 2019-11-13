@@ -139,13 +139,8 @@ def resolve_header(
 
 
 def get_partition(machine, core_hours=None):
-    if machine == const.HPC.maui.value:
-        partition = "nesi_research"
-    elif machine == const.HPC.mahuika.value:
-        if core_hours and core_hours < 6:
-            partition = "large"
-        else:
-            partition = "large"
+    if machine == const.HPC.stampede.value:
+        partition = "normal"
     else:
         partition = ""
     return partition
