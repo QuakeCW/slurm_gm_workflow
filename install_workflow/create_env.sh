@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This script needs to be run with the shared python3 maui virtual env activated!
+# This script needs to be run with the shared python3 stampede virtual env activated!
 
 name=${1?Error: "A environment name has to be given"}
 conf_file=${2?Error: "A config file path has to be provided"}
@@ -7,6 +7,7 @@ conf_file=${2?Error: "A config file path has to be provided"}
 # Load all the required value from the json config
 base_path=`jq -r '.base_environments_path' ${conf_file}`
 
+echo $base_path
 # Check that this name isn't already taken.
 env_path=${base_path}/${name}
 if [[ -d "${env_path}" ]]; then
@@ -47,10 +48,10 @@ git clone git@github.com:ucgmsim/visualization.git
 
 # Create virtual environment
 mkdir virt_envs
-python3 -m venv virt_envs/python3_maui
+python3 -m venv virt_envs/python3_stampede
 
 # Activate new python env
-source ./virt_envs/python3_maui/bin/activate
+source ./virt_envs/python3_stampede/bin/activate
 
 # Sanity check
 if [[ `which python` != *"${name}"* && `which pip` != *"${name}"* ]]; then
@@ -63,7 +64,7 @@ fi
 # Using xargs means that each package is installed individually, which
 # means that if there is an error (i.e. can't find qcore), then the other
 # packages are still installed. However, this is slower.
-xargs -n 1 -a ${env_path}/workflow/install_workflow/maui_python3_requirements.txt pip install
+xargs -n 1 -a ${env_path}/workflow/install_workflow/stampede_python3_requirements.txt pip install
 
 # Install qcore & Empirical Engine & IM_calc
 pip install -I --no-deps -e ./qcore
