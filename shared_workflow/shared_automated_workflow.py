@@ -64,6 +64,7 @@ def submit_sl_script(
     """Submits the slurm script and updates the management db"""
     if submit_yes:
         logger.debug("Submitting {} on machine {}".format(script, target_machine))
+        logger.debug("target_machine={} host={}".format(target_machine,host))
         if target_machine and target_machine != host:
             res = exe(
                 "sbatch --export=CUR_ENV,CUR_HPC -M {} {}".format(
@@ -76,9 +77,12 @@ def submit_sl_script(
         if len(res[1]) == 0:
             logger.debug("Successfully submitted task to slurm")
             # no errors, return the job id
-            return_words = res[0].split()
+            logger.debug(res)
+            return_words = res[0].split() #there are multiple appearances of "job"
+            return_words.reverse()
+            logger.debug(return_words)
             job_index = return_words.index("job")
-            jobid = return_words[job_index + 1]
+            jobid = return_words[job_index - 1] #we are interested in the last mention of "job"
             try:
                 int(jobid)
             except ValueError:

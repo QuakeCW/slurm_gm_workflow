@@ -75,6 +75,8 @@ def main(
             logger=logger,
         )
 
+        est_nodes = est_cores//const.CORE_PER_NODE//const.HF_THREADING
+
         # scale up the est_run_time if it is a re-run (with check-pointing)
         # creates and extra variable so we keep the orignial estimated run time for other purpose
         est_run_time_scaled = est_run_time
@@ -98,6 +100,7 @@ def main(
 
         header_dict = {
             "n_tasks": est_cores,
+            "n_nodes": est_nodes,
             "wallclock_limit": wct,
             "job_name": "sim_hf.{}".format(underscored_srf),
             "job_description": "HF calculation",
