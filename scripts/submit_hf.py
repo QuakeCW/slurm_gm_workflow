@@ -3,7 +3,7 @@
 import os
 import argparse
 from logging import Logger
-
+from math import ceil
 import estimation.estimate_wct as est
 from qcore import utils, shared, srf, binary_version
 from qcore.config import host, get_machine_config
@@ -75,7 +75,7 @@ def main(
             logger=logger,
         )
 
-        est_nodes = est_cores//const.CORE_PER_NODE//const.HF_THREADING
+        est_nodes = ceil(est_cores/const.CORE_PER_NODE/const.HF_THREADING)
 
         # scale up the est_run_time if it is a re-run (with check-pointing)
         # creates and extra variable so we keep the orignial estimated run time for other purpose

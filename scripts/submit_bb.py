@@ -3,6 +3,7 @@
 import os
 import argparse
 from logging import Logger
+from math import ceil
 
 import estimation.estimate_wct as est
 import qcore.constants as const
@@ -25,7 +26,7 @@ def main(
 ):
     params = utils.load_sim_params(os.path.join(args.rel_dir, "sim_params.yaml"))
     ncores = const.BB_DEFAULT_NCORES
-    nnodes = ncores // const.CORE_PER_NODE // const.BB_THREADING
+    nnodes = ceil(ncores / const.CORE_PER_NODE / const.BB_THREADING)
 
     version = args.version
     if version in ["mpi", "run_bb_mpi"]:

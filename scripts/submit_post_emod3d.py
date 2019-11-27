@@ -4,6 +4,7 @@ import os
 import glob
 import argparse
 from logging import Logger
+from math import ceil
 
 from qcore import utils, binary_version
 from qcore.config import get_machine_config, host
@@ -14,7 +15,6 @@ import qcore.simulation_structure as sim_struct
 from shared_workflow.shared import confirm
 from shared_workflow.shared_automated_workflow import submit_sl_script
 from shared_workflow.shared_template import write_sl_script
-
 
 merge_ts_name_prefix = "post_emod3d_merge_ts"
 
@@ -48,6 +48,7 @@ def main(args, logger: Logger = get_basic_logger()):
 
     header_dict = {
         "n_tasks": const.MERGE_TS_DEFAULT_NCORES,
+        "n_nodes": ceil(const.MERGE_TS_DEFAULT_NCORES/const.CORE_PER_NODE/const.MERGE_TS_THREADING)
         "wallclock_limit": default_run_time_merge_ts,
         "job_name": "post_emod3d.merge_ts.{}".format(srf_name),
         "job_description": "post emod3d: merge_ts",

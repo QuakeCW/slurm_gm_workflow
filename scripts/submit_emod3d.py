@@ -5,6 +5,7 @@
 import os
 import argparse
 from logging import Logger
+from math import ceil
 
 from qcore import utils, binary_version
 from qcore.config import get_machine_config, host
@@ -70,7 +71,7 @@ def main(
 
         wct = set_wct(est_run_time_scaled, est_cores, args.auto)
 
-        est_nodes = est_cores//const.CORE_PER_NODE//const.LF_THREADING
+        est_nodes = ceil(est_cores/const.CORE_PER_NODE/const.LF_THREADING)
 
         target_qconfig = get_machine_config(args.machine)
 
