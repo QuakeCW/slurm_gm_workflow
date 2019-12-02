@@ -109,6 +109,7 @@ def submit_im_calc_slurm(
         est_run_time, options_dict[SlBodyOptConsts.n_procs.value], options_dict["auto"]
     )
 
+    ncores = options_dict[SlHdrOptConsts.n_tasks.value]
     header_dict = {
         "wallclock_limit": wct,
         "job_name": "{}_{}".format(
@@ -117,7 +118,7 @@ def submit_im_calc_slurm(
         "exe_time": const.timestamp,
         "target_host": options_dict["machine"],
         "write_directory": options_dict["write_directory"],
-        "n_tasks": options_dict[SlHdrOptConsts.n_tasks.value],
+        "n_tasks": ncores,
         "n_nodes": ceil(ncores / const.CORE_PER_NODE / const.IM_CALC_THREADING),
         "job_description": options_dict[SlHdrOptConsts.description.value],
     }

@@ -48,7 +48,7 @@ def main(args, logger: Logger = get_basic_logger()):
 
     header_dict = {
         "n_tasks": const.MERGE_TS_DEFAULT_NCORES,
-        "n_nodes": ceil(const.MERGE_TS_DEFAULT_NCORES/const.CORE_PER_NODE/const.MERGE_TS_THREADING)
+        "n_nodes": ceil(const.MERGE_TS_DEFAULT_NCORES/const.CORE_PER_NODE/const.MERGE_TS_THREADING),
         "wallclock_limit": default_run_time_merge_ts,
         "job_name": "post_emod3d.merge_ts.{}".format(srf_name),
         "job_description": "post emod3d: merge_ts",
