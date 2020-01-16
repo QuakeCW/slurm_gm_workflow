@@ -23,7 +23,7 @@ ONCE_PATTERN = "%_REL01"
 NONE = "NONE"
 
 
-def get_queued_tasks(user=None, machine=const.HPC.stampede):
+def get_queued_tasks(user=None, machine=const.HPC.nurion):
     if user is not None:
         cmd = "squeue -A {} -o '%A %t' -M {} -u {}".format(
             const.DEFAULT_ACCOUNT, machine.value, user

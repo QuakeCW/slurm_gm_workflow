@@ -141,7 +141,7 @@ def resolve_header(
 
 
 def get_partition(machine, core_hours=None):
-    if machine == const.HPC.stampede.value:
+    if machine == const.HPC.nurion.value:
         partition = "normal"
     else:
         partition = ""
