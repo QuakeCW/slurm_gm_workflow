@@ -4,6 +4,7 @@ import os
 import argparse
 from enum import Enum
 from logging import Logger
+from math import ceil
 from typing import Dict
 
 from qcore import utils, shared
@@ -127,8 +128,12 @@ def submit_im_calc_slurm(
         est_run_time, options_dict[SlBodyOptConsts.n_procs.value], options_dict["auto"]
     )
 
+<<<<<<< HEAD
     # adv_im related check
 
+=======
+    ncores = options_dict[SlHdrOptConsts.n_tasks.value]
+>>>>>>> 2a7ab8b9be6355015440f52d9a82f32fbbfa3b67
     header_dict = {
         "wallclock_limit": wct,
         "job_name": "{}_{}".format(
@@ -139,7 +144,8 @@ def submit_im_calc_slurm(
         "exe_time": const.timestamp,
         "target_host": options_dict["machine"],
         "write_directory": options_dict["write_directory"],
-        "n_tasks": options_dict[SlHdrOptConsts.n_tasks.value],
+        "n_tasks": ncores,
+        "n_nodes": ceil(ncores / const.CORE_PER_NODE / const.IM_CALC_THREADING),
         "job_description": options_dict[SlHdrOptConsts.description.value],
         # TODO: this logic may need update along with adv_im_est_model
         SlHdrOptConsts.additional.value: options_dict[SlHdrOptConsts.additional.value]

@@ -104,6 +104,7 @@ def resolve_header(
     template_dir,
     account,
     n_tasks,
+    n_nodes,
     wallclock_limit,
     job_name,
     version,
@@ -127,6 +128,7 @@ def resolve_header(
         job_name=job_name,
         account=account,
         n_tasks=n_tasks,
+        n_nodes=n_nodes,
         wallclock_limit=wallclock_limit,
         mail=mail,
         memory=memory,
@@ -139,13 +141,8 @@ def resolve_header(
 
 
 def get_partition(machine, core_hours=None):
-    if machine == const.HPC.maui.value:
-        partition = "nesi_research"
-    elif machine == const.HPC.mahuika.value:
-        if core_hours and core_hours < 6:
-            partition = "large"
-        else:
-            partition = "large"
+    if machine == const.HPC.stampede.value:
+        partition = "normal"
     else:
         partition = ""
     return partition

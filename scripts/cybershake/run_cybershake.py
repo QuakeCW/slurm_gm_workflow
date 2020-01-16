@@ -331,7 +331,7 @@ def main():
             wrapper_logger.log(qclogging.NOPRINTCRITICAL, incorrect_n_runs)
             parser.error(incorrect_n_runs)
     else:
-        n_runs = {const.HPC.maui: 12, const.HPC.mahuika: 12}
+        n_runs = {const.HPC.stampede: 50}
     wrapper_logger.debug(
         "Machines will allow up to {} jobs to run simultaneously".format(n_runs)
     )

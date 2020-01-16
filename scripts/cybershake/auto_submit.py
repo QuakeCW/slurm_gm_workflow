@@ -27,9 +27,10 @@ from scripts.submit_sim_imcalc import submit_im_calc_slurm, SlBodyOptConsts
 from shared_workflow import shared_automated_workflow
 import shared_workflow.load_config as ldcfg
 
-DEFAULT_N_RUNS = {const.HPC.maui: 12, const.HPC.mahuika: 12}
+DEFAULT_N_RUNS = {const.HPC.stampede: 50}
 
 JOB_RUN_MACHINE = {
+<<<<<<< HEAD
     const.ProcessType.EMOD3D: const.HPC.maui,
     const.ProcessType.merge_ts: const.HPC.mahuika,
     const.ProcessType.plot_ts: const.HPC.mahuika,
@@ -45,6 +46,22 @@ JOB_RUN_MACHINE = {
     const.ProcessType.HF2BB: const.HPC.mahuika,
     const.ProcessType.plot_srf: const.HPC.mahuika,
     const.ProcessType.advanced_IM: const.HPC.mahuika,
+=======
+    const.ProcessType.EMOD3D: const.HPC.stampede,
+    const.ProcessType.merge_ts: const.HPC.stampede,
+    const.ProcessType.plot_ts: const.HPC.stampede,
+    const.ProcessType.HF: const.HPC.stampede,
+    const.ProcessType.BB: const.HPC.stampede,
+    const.ProcessType.IM_calculation: const.HPC.stampede,
+    const.ProcessType.IM_plot: const.HPC.stampede,
+    const.ProcessType.rrup: const.HPC.stampede,
+    const.ProcessType.Empirical: const.HPC.stampede,
+    const.ProcessType.Verification: const.HPC.stampede,
+    const.ProcessType.clean_up: const.HPC.stampede,
+    const.ProcessType.LF2BB: const.HPC.stampede,
+    const.ProcessType.HF2BB: const.HPC.stampede,
+    const.ProcessType.plot_srf: const.HPC.stampede,
+>>>>>>> 2a7ab8b9be6355015440f52d9a82f32fbbfa3b67
 }
 
 
