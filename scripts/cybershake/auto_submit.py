@@ -246,7 +246,7 @@ def submit_task(
             40, False, root_folder, "nesi00213", [run_name], sim_dir
         )
         submit_sl_script(
-            sl_script, target_machine=JOB_RUN_MACHINE[const.Empirical.rrup].value
+            sl_script, target_machine=JOB_RUN_MACHINE[const.ProcessType.Empirical].value
         )
     elif proc_type == const.ProcessType.Verification.value:
         pass
