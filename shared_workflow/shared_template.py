@@ -25,7 +25,7 @@ def write_sl_script(
         "template_dir": recipe_dir,
         "memory": const.DEFAULT_MEMORY,
         "exe_time": const.timestamp,
-        "version": "slurm",
+        "version": "pbs",
         "account": cmd_args.account,
         "target_host": cmd_args.machine,
         "write_directory": write_directory,
@@ -53,7 +53,7 @@ def write_sl_script(
     script_name = os.path.abspath(
         os.path.join(
             write_directory,
-            "{}_{}.sl".format(
+            "{}_{}.sh".format(
                 script_prefix, datetime.now().strftime(const.TIMESTAMP_FORMAT)
             ),
         )
@@ -113,7 +113,7 @@ def resolve_header(
     job_description,
     partition=None,
     additional_lines="",
-    template_path="slurm_header.cfg",
+    template_path="pbs_header.cfg",
     target_host=host,
     mail="test@test.com",
     write_directory=".",
@@ -126,8 +126,7 @@ def resolve_header(
         version=version,
         job_description=job_description,
         job_name=job_name,
-        account=account,
-        n_tasks=n_tasks,
+        n_tasks_per_node= (int)n_tasks/n_nodes,
         n_nodes=n_nodes,
         wallclock_limit=wallclock_limit,
         mail=mail,
