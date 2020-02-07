@@ -29,14 +29,14 @@ def get_queued_tasks(user=None, machine=const.HPC.nurion):
             user
         )
         header_pattern = "pbs:"
-	header_idx=1
-	job_list_idx=5
+        header_idx=1
+        job_list_idx=5
     else:
         cmd = "qstat ".format(
         )
         header_pattern = "Job id"
-	header_idx=0
-	job_list_idx=3
+        header_idx=0
+        job_list_idx=3
 
     process = Popen(shlex.split(cmd), stdout=PIPE, encoding="utf-8")
     (output, err) = process.communicate()
