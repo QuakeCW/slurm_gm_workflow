@@ -27,24 +27,23 @@ from scripts.submit_sim_imcalc import submit_im_calc_slurm, SlBodyOptConsts
 from shared_workflow import shared_automated_workflow
 import shared_workflow.load_config as ldcfg
 
-DEFAULT_N_RUNS = {const.HPC.maui: 12, const.HPC.mahuika: 12}
+DEFAULT_N_RUNS = {const.HPC.nurion: 50}
 
 JOB_RUN_MACHINE = {
-    const.ProcessType.EMOD3D: const.HPC.maui,
-    const.ProcessType.merge_ts: const.HPC.mahuika,
-    const.ProcessType.plot_ts: const.HPC.mahuika,
-    const.ProcessType.HF: const.HPC.maui,
-    const.ProcessType.BB: const.HPC.maui,
-    const.ProcessType.IM_calculation: const.HPC.maui,
-    const.ProcessType.IM_plot: const.HPC.mahuika,
-    const.ProcessType.rrup: const.HPC.mahuika,
-    const.ProcessType.Empirical: const.HPC.mahuika,
-    const.ProcessType.Verification: const.HPC.mahuika,
-    const.ProcessType.clean_up: const.HPC.mahuika,
-    const.ProcessType.LF2BB: const.HPC.mahuika,
-    const.ProcessType.HF2BB: const.HPC.mahuika,
-    const.ProcessType.plot_srf: const.HPC.mahuika,
-    const.ProcessType.advanced_IM: const.HPC.mahuika,
+    const.ProcessType.EMOD3D: const.HPC.nurion,
+    const.ProcessType.merge_ts: const.HPC.nurion,
+    const.ProcessType.plot_ts: const.HPC.nurion,
+    const.ProcessType.HF: const.HPC.nurion,
+    const.ProcessType.BB: const.HPC.nurion,
+    const.ProcessType.IM_calculation: const.HPC.nurion,
+    const.ProcessType.IM_plot: const.HPC.nurion,
+    const.ProcessType.rrup: const.HPC.nurion,
+    const.ProcessType.Empirical: const.HPC.nurion,
+    const.ProcessType.Verification: const.HPC.nurion,
+    const.ProcessType.clean_up: const.HPC.nurion,
+    const.ProcessType.LF2BB: const.HPC.nurion,
+    const.ProcessType.HF2BB: const.HPC.nurion,
+    const.ProcessType.plot_srf: const.HPC.nurion,
 }
 
 

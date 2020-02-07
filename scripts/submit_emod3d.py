@@ -5,6 +5,7 @@
 import os
 import argparse
 from logging import Logger
+from math import ceil
 
 from qcore import utils, binary_version
 from qcore.config import get_machine_config, host
@@ -70,6 +71,8 @@ def main(
 
         wct = set_wct(est_run_time_scaled, est_cores, args.auto)
 
+        est_nodes = ceil(est_cores/const.CORE_PER_NODE/const.LF_THREADING)
+
         target_qconfig = get_machine_config(args.machine)
 
         binary_path = binary_version.get_lf_bin(
@@ -92,6 +95,7 @@ def main(
 
         header_dict = {
             "n_tasks": est_cores,
+            "n_nodes": est_nodes,
             "wallclock_limit": wct,
             "job_name": "run_emod3d.{}".format(srf_name),
             "job_description": "emod3d slurm script",

@@ -23,32 +23,46 @@ ONCE_PATTERN = "%_REL01"
 NONE = "NONE"
 
 
-def get_queued_tasks(user=None, machine=const.HPC.maui):
-    if user is not None:
-        cmd = "squeue -A {} -o '%A %t' -M {} -u {}".format(
-            const.DEFAULT_ACCOUNT, machine.value, user
+def get_queued_tasks(user=None, machine=const.HPC.nurion):
+    if user is not None:  #just print the list of jobid and status (a space between)
+        cmd = "qstat -u {}".format(
+            user
         )
+        header_pattern = "pbs:"
+        header_idx=1
+        job_list_idx=5
     else:
-        cmd = "squeue -A {} -o '%A %t' -M {}".format(
-            const.DEFAULT_ACCOUNT, machine.value
+        cmd = "qstat ".format(
         )
+        header_pattern = "Job id"
+        header_idx=0
+        job_list_idx=3
+
     process = Popen(shlex.split(cmd), stdout=PIPE, encoding="utf-8")
     (output, err) = process.communicate()
     process.wait()
+    print(output)
+    print(err)
     try:
-        header = output.split("\n")[1]
+        header = output.split("\n")[header_idx]
     except:
         raise EnvironmentError(
-            "squeue did not return expected output. Ignoring for this iteration. Actual output: {}".format(
+            "qstat did not return expected output. Ignoring for this iteration. Actual output: {}".format(
                 output
             )
         )
     else:
-        if header != "JOBID ST":
+        if header_pattern not in header:
             raise EnvironmentError(
-                "squeue did not return expected output. Ignoring for this iteration."
+                "qstat did not return expected output. Ignoring for this iteration."
             )
-    output_list = list(filter(None, output.split("\n")[1:]))
+    #only keep the relevant info
+    jobs = []
+    for l in [line.split() for line in output.split("\n")[job_list_idx:-1]]: #last line is empty
+        print(l)
+        jobs.append("{} {}".format(l[0].split(".")[0],l[-2]))    
+    
+    output_list = list(filter(None, jobs))
     return output_list
 
 
@@ -64,21 +78,19 @@ def submit_sl_script(
     """Submits the slurm script and updates the management db"""
     if submit_yes:
         logger.debug("Submitting {} on machine {}".format(script, target_machine))
+        logger.debug("target_machine={} host={}".format(target_machine,host))
         if target_machine and target_machine != host:
-            res = exe(
-                "sbatch --export=CUR_ENV,CUR_HPC -M {} {}".format(
-                    target_machine, script
-                ),
-                debug=False,
-            )
+            logger.error("Job submission for different machine is not supported")
+            sys.exit()
         else:
-            res = exe("sbatch {}".format(script), debug=False)
+            res = exe("qsub {}".format(script), debug=False)
         if len(res[1]) == 0:
             logger.debug("Successfully submitted task to slurm")
             # no errors, return the job id
-            return_words = res[0].split()
-            job_index = return_words.index("job")
-            jobid = return_words[job_index + 1]
+            logger.debug(res)
+            return_words = res[0].split('.pbs') #4027812.pbs 
+            logger.debug(return_words)
+            jobid=return_words[0]
             try:
                 int(jobid)
             except ValueError:

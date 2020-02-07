@@ -8,6 +8,8 @@ if [[ $2 == "maui" ]]; then
     source ${env_path}/workflow/install_workflow/helper_functions/activate_maui_python3_virtenv.sh ${env_path}/virt_envs/python3_maui
 elif [[ $2 == "mahuika" ]]; then
     source ${env_path}/workflow/install_workflow/helper_functions/activate_mahuika_python3_virtenv.sh ${env_path}/virt_envs/python3_mahuika
+elif [[ $2 == "stampede" ]]; then
+    source ${env_path}/workflow/install_workflow/helper_functions/activate_stampede_python3_virtenv.sh ${env_path}/virt_envs/python3_stampede
 else
     echo "$2, invalid HPC, Quitting!"
     exit
