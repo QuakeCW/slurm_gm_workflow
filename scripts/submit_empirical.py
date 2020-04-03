@@ -69,7 +69,7 @@ def generate_sl(
         job_name="empirical",
         version="slurm",
         memory="2G",
-        exe_time="%j",
+        exe_time=const.timestamp,
         job_description="Empirical Engine",
         mail="",
         target_host=target_machine,
