@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This script needs to be run with the shared python3 stampede virtual env activated!
+# This script needs to be run with the shared python3 nurion virtual env activated!
 
 name=${1?Error: "A environment name has to be given"}
 conf_file=${2?Error: "A config file path has to be provided"}
@@ -22,7 +22,7 @@ cd ${env_path}
 
 # Setting up workfow, qcore and IM calc
 echo "Cloning workflow"
-git clone git@github.com:ucgmsim/slurm_gm_workflow.git
+git clone https://github.com/ucgmsim/slurm_gm_workflow.git
 mv ./slurm_gm_workflow ./workflow
 
 # Create workflow config
@@ -32,26 +32,26 @@ python ./workflow/install_workflow/create_config_file.py ${env_path}
 echo "dev" > ${env_path}/workflow/version
 
 echo "Cloning qcore"
-git clone git@github.com:ucgmsim/qcore.git
+git clone https://github.com/ucgmsim/qcore.git
 
 echo "Cloning IM_calculation"
-git clone git@github.com:ucgmsim/IM_calculation.git
+git clone https://github.com/ucgmsim/IM_calculation.git
 
 echo "Cloning Pre-processing"
-git clone git@github.com:ucgmsim/Pre-processing.git
+git clone https://github.com/ucgmsim/Pre-processing.git
 
 echo "Cloning Empirical Engine"
-git clone git@github.com:ucgmsim/Empirical_Engine.git
+git clone https://github.com/ucgmsim/Empirical_Engine.git
 
 echo "Cloning visualization"
-git clone git@github.com:ucgmsim/visualization.git
+git clone https://github.com/ucgmsim/visualization.git
 
 # Create virtual environment
 mkdir virt_envs
-python3 -m venv virt_envs/python3_stampede
+python3 -m venv virt_envs/python3_nurion
 
 # Activate new python env
-source ./virt_envs/python3_stampede/bin/activate
+source ./virt_envs/python3_nurion/bin/activate
 
 # Sanity check
 if [[ `which python` != *"${name}"* && `which pip` != *"${name}"* ]]; then
@@ -64,7 +64,7 @@ fi
 # Using xargs means that each package is installed individually, which
 # means that if there is an error (i.e. can't find qcore), then the other
 # packages are still installed. However, this is slower.
-xargs -n 1 -a ${env_path}/workflow/install_workflow/stampede_python3_requirements.txt pip install
+xargs -n 1 -a ${env_path}/workflow/install_workflow/nurion_python3_requirements.txt pip install
 
 # Install qcore & Empirical Engine & IM_calc
 pip install -I --no-deps -e ./qcore
