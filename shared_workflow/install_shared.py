@@ -6,8 +6,10 @@ from logging import Logger
 from numpy import isclose
 import yaml
 
+from h5py import File as h5open
+
 from qcore import geo, utils, simulation_structure
-from qcore.qclogging import get_basic_logger, VERYVERBOSE
+from qcore.qclogging import get_basic_logger, VERYVERBOSE, NOPRINTWARNING
 from qcore.constants import (
     SimParams,
     FaultParams,
@@ -232,7 +234,10 @@ def install_bb(
     shared.show_horizontal_line(c="*")
     if v1d_full_path is not None:
         v_mod_1d_selected = v1d_full_path
-        root_dict["bb"]["site_specific"] = False
+        # temporary removed because master version of bb_sim does not take this as a argument
+        # TODO: most of these logic are not required and should be removed
+        # these logic are now depending on gmsim_version_template
+        # root_dict["bb"]["site_specific"] = False
         root_dict["v_mod_1d_name"] = v_mod_1d_selected
 
     # TODO:add in logic for site specific as well, if the user provided as args
@@ -243,7 +248,7 @@ def install_bb(
             v1d_mod_dir=site_v1d_dir,
             logger=logger,
         )
-        root_dict["bb"]["site_specific"] = True
+        # root_dict["bb"]["site_specific"] = True
         root_dict["v_mod_1d_name"] = v_mod_1d_path
         root_dict["hf_stat_vs_ref"] = hf_stat_vs_ref
     else:
@@ -252,12 +257,12 @@ def install_bb(
             v_mod_1d_path, hf_stat_vs_ref = shared.get_site_specific_path(
                 os.path.dirname(stat_file), logger=logger
             )
-            root_dict["bb"]["site_specific"] = True
+            # root_dict["bb"]["site_specific"] = True
             root_dict["v_mod_1d_name"] = v_mod_1d_path
             root_dict["hf_stat_vs_ref"] = hf_stat_vs_ref
         else:
             v_mod_1d_name, v_mod_1d_selected = q_1d_velocity_model(v1d_dir)
-            root_dict["bb"]["site_specific"] = False
+            # root_dict["bb"]["site_specific"] = False
             root_dict["v_mod_1d_name"] = v_mod_1d_selected
 
 
@@ -302,6 +307,7 @@ def generate_fd_files(
     output_path,
     vm_params_dict,
     stat_file="default.ll",
+    keep_dup_station=True,
     logger: Logger = get_basic_logger(),
 ):
     MODEL_LAT = vm_params_dict["MODEL_LAT"]
@@ -358,6 +364,13 @@ def generate_fd_files(
         elif xy[i] not in sxy:
             sxy.append(xy[i])
             suname.append(sname[i])
+        elif keep_dup_station:
+            # still adds in the station but raise a warning
+            sxy.append(xy[i])
+            suname.append(sname[i])
+            logger.log(
+                NOPRINTWARNING, f"Duplicate Station added: {sname[i]} at {xy[i]}"
+            )
         else:
             logger.log(VERYVERBOSE, "Duplicate Station Ignored: {}".format(sname[i]))
 

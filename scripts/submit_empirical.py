@@ -6,9 +6,10 @@ import os
 
 from shared_workflow.shared_defaults import recipe_dir
 from shared_workflow.shared_template import generate_context, resolve_header
+from qcore import simulation_structure, utils
+from qcore import constants as const
 
 DEFAULT_ACCOUNT = "nesi00213"
-
 
 # TODO: Create library for this
 def get_fault_name(run_name):
@@ -16,13 +17,7 @@ def get_fault_name(run_name):
 
 
 def rrup_file_exists(cybershake_folder, fault, realisation):
-    rrup_file = os.path.join(
-        cybershake_folder,
-        "Runs/",
-        fault,
-        realisation,
-        "verification/rrup_" + fault + ".csv",
-    )
+    rrup_file = simulation_structure.get_rrup_path(cybershake_folder, realisation)
     return os.path.exists(rrup_file)
 
 
@@ -32,14 +27,33 @@ def write_sl(sl_name, content):
         f.write(content)
 
 
-def generate_sl(np, extended, cybershake_folder, account, realisations, out_dir):
+def generate_sl(
+    extended, cybershake_folder, account, realisations, out_dir, target_machine
+):
+    # extended is '-e' or ''
+
     faults = map(get_fault_name, realisations)
     run_data = zip(realisations, faults)
     run_data = [
-        (realisation, fault)
-        for realisation, fault in run_data
-        if rrup_file_exists(cybershake_folder, fault, realisation)
+        (rel, fault)
+        for (rel, fault) in run_data
+        if rrup_file_exists(cybershake_folder, fault, rel)
     ]
+    # determine NP
+    # TODO: empirical are currently not parallel, update this when they are
+    if target_machine == const.HPC.mahuika.value:
+        np = 1
+    elif target_machine == const.HPC.maui.value:
+        np = 1
+    else:
+        raise SystemError(f"cannot recognize target_machine :{target_machine}")
+    # load sim_params for vs30_file
+    # this is assuming all simulation use the same vs30 in root_params.yaml
+    sim_dir = simulation_structure.get_sim_dir(cybershake_folder, run_data[0][0])
+    sim_params = utils.load_sim_params(
+        simulation_structure.get_sim_params_yaml_path(sim_dir)
+    )
+
     timestamp_format = "%Y%m%d_%H%M%S"
     timestamp = datetime.now().strftime(timestamp_format)
 
@@ -58,10 +72,11 @@ def generate_sl(np, extended, cybershake_folder, account, realisations, out_dir)
         exe_time="%j",
         job_description="Empirical Engine",
         mail="",
+        target_host=target_machine,
         partition=None,
         additional_lines="",
         template_path="slurm_header.cfg",
-        write_directory=".",
+        write_directory=out_dir,
     )
     context = generate_context(
         template_dir,
@@ -70,6 +85,7 @@ def generate_sl(np, extended, cybershake_folder, account, realisations, out_dir)
             "run_data": run_data,
             "np": np,
             "extended": extended,
+            "vs30_file": sim_params.stat_vs_est,
             "mgmt_db_location": cybershake_folder,
         },
     )
