@@ -23,7 +23,7 @@ ONCE_PATTERN = "%_REL01"
 NONE = "NONE"
 
 
-def get_queued_tasks(user=None, machine=const.HPC.nurion):
+def get_queued_tasks(user="hpc11a02", machine=const.HPC.nurion):
     if user is not None:  #just print the list of jobid and status (a space between)
         cmd = "qstat -u {}".format(
             user
@@ -41,14 +41,15 @@ def get_queued_tasks(user=None, machine=const.HPC.nurion):
     process = Popen(shlex.split(cmd), stdout=PIPE, encoding="utf-8")
     (output, err) = process.communicate()
     process.wait()
-    print(output)
-    print(err)
+    
     try:
         header = output.split("\n")[header_idx]
     except:
+        if user is not None and len(output) == 0: #empty queue has no header
+            return []
         raise EnvironmentError(
             "qstat did not return expected output. Ignoring for this iteration. Actual output: {}".format(
-                output
+            output
             )
         )
     else:
@@ -83,7 +84,7 @@ def submit_sl_script(
             logger.error("Job submission for different machine is not supported")
             sys.exit()
         else:
-            res = exe("qsub {}".format(script), debug=False)
+            res = exe("qsub {}".format(script), debug=True)
         if len(res[1]) == 0:
             logger.debug("Successfully submitted task to slurm")
             # no errors, return the job id

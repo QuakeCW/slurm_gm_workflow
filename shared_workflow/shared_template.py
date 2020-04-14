@@ -126,7 +126,7 @@ def resolve_header(
         version=version,
         job_description=job_description,
         job_name=job_name,
-        n_tasks_per_node= (int)n_tasks/n_nodes,
+        n_tasks_per_node=(int)(n_tasks/n_nodes),
         n_nodes=n_nodes,
         wallclock_limit=wallclock_limit,
         mail=mail,

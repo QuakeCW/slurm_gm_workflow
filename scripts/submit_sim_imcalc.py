@@ -128,12 +128,9 @@ def submit_im_calc_slurm(
         est_run_time, options_dict[SlBodyOptConsts.n_procs.value], options_dict["auto"]
     )
 
-<<<<<<< HEAD
     # adv_im related check
 
-=======
     ncores = options_dict[SlHdrOptConsts.n_tasks.value]
->>>>>>> 2a7ab8b9be6355015440f52d9a82f32fbbfa3b67
     header_dict = {
         "wallclock_limit": wct,
         "job_name": "{}_{}".format(

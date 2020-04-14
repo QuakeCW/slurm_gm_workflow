@@ -400,7 +400,7 @@ def run_main_submit_loop(
                 main_logger.critical(e)
                 n_tasks_to_run[hpc] = 0
             else:
-                squeued_tasks.pop(0)
+#                squeued_tasks.pop(0) #no need for non-nesi
                 n_tasks_to_run[hpc] = n_runs[hpc] - len(squeued_tasks)
                 if len(squeued_tasks) > 0:
                     main_logger.debug(
