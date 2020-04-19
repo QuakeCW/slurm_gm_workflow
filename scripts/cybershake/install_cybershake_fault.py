@@ -83,7 +83,7 @@ def gen_args_cmd(
     command_parts_copy = list(command_parts)
     # remove srun, python, and *.py from the command
     for i in command_parts:
-        if i in ["srun", "python"] or i.endswith(".py"):
+        if i in ["srun","mpirun", "ibrun", "python"] or i.endswith(".py"):
             command_parts_copy.remove(i)
     command_parts = command_parts_copy
 

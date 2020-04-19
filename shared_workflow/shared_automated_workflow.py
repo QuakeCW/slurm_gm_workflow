@@ -84,7 +84,11 @@ def submit_sl_script(
             logger.error("Job submission for different machine is not supported")
             sys.exit()
         else:
+            cwd = os.getcwd()
+            scratch = os.path.dirname(script)
+            os.chdir(scratch) #KISTI doesn't allow job submission from home
             res = exe("qsub {}".format(script), debug=True)
+            os.chdir(cwd)
         if len(res[1]) == 0:
             logger.debug("Successfully submitted task to slurm")
             # no errors, return the job id

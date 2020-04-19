@@ -120,7 +120,6 @@ def main(
             command_template_parameters,
             args,
         )
-
         submit_sl_script(
             script_file_path,
             const.ProcessType.EMOD3D.value,

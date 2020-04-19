@@ -26,6 +26,8 @@ QUEUE_MONITOR_LOG_FILE_NAME = "queue_monitor_log_{}.txt"
 DEFAULT_N_MAX_RETRIES = 2
 
 SLURM_TO_STATUS_DICT = {"R": 3, "PD": 2, "CG": 3}
+PBS_TO_STATUS_DICT = {"R": 3, "Q": 2, "E": 3, "F": 4} 
+SLURM_TO_STATUS_DICT = PBS_TO_STATUS_DICT
 
 keepAlive = True
 
@@ -139,7 +141,7 @@ def update_tasks(
                 queue_status = SLURM_TO_STATUS_DICT[queue_status]
             except KeyError:
                 task_logger.error(
-                    "Failed to recogize state code {}, updating to {}".format(
+                    "Failed to recognize state code {}, updating to {}".format(
                         queue_status, const.Status.unknown.value
                     )
                 )
@@ -189,6 +191,7 @@ def update_tasks(
             db_running_task.proc_type,
             logger=task_logger,
         ):
+            print("Couldn't find job in the queue, attemping to resub")
             if not complete_data:
                 task_logger.warning(
                     "Task '{}' not found on squeue or in the management db folder, "
@@ -213,7 +216,10 @@ def update_tasks(
                     )
                 )
             # When job failed, we want to log metadata as well
-            sacct_metadata(db_running_task, task_logger, root_folder)
+            #sacct_metadata(db_running_task, task_logger, root_folder)
+        else:
+            print(f"Got to this weird part with {db_running_task.run_name}")
+    print("tasks_to_do:", tasks_to_do)
     return tasks_to_do
 
 

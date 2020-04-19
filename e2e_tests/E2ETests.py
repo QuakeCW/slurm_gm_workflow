@@ -328,6 +328,7 @@ class E2ETests(object):
             ),
         )
 
+        print(submit_cmd)
         # Different process types for which canceling/resume is tested
         proc_type_cancel = None
         if self.config_dict[self.test_checkpoint_key]:
@@ -471,7 +472,7 @@ class E2ETests(object):
                     "for {} and process type {}".format(entry[1], entry[2], entry[0])
                 )
                 self.canceled_running.append(str(entry[1]))
-                out, err = exe("scancel -v {}".format(entry[1]), debug=False)
+                out, err = exe("qdel {}".format(entry[1]), debug=False)
 
                 print("Scancel out: ", out, err)
                 if "error" not in out.lower() and "error" not in err.lower():
