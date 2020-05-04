@@ -23,7 +23,7 @@ ONCE_PATTERN = "%_REL01"
 NONE = "NONE"
 
 
-def get_queued_tasks(user="hpc11a02", machine=const.HPC.nurion):
+def get_queued_tasks(user="hpc11a02", machine=const.HPC.nurion, logger: Logger=get_basic_logger()):
     if user is not None:  #just print the list of jobid and status (a space between)
         cmd = "qstat -u {}".format(
             user
@@ -60,10 +60,11 @@ def get_queued_tasks(user="hpc11a02", machine=const.HPC.nurion):
     #only keep the relevant info
     jobs = []
     for l in [line.split() for line in output.split("\n")[job_list_idx:-1]]: #last line is empty
-        print(l)
+        logger.debug(l)
         jobs.append("{} {}".format(l[0].split(".")[0],l[-2]))    
     
     output_list = list(filter(None, jobs))
+    logger.debug(output_list)
     return output_list
 
 
@@ -75,6 +76,7 @@ def submit_sl_script(
     submit_yes: bool = False,
     target_machine: str = None,
     logger: Logger = get_basic_logger(),
+    sim_dir: str = "",
 ):
     """Submits the slurm script and updates the management db"""
     if submit_yes:
@@ -84,9 +86,10 @@ def submit_sl_script(
             logger.error("Job submission for different machine is not supported")
             sys.exit()
         else:
+            if sim_dir == "":
+                sim_dir=os.path.dirname(script) #unless specified, we assume .sh script is in sim_dir
             cwd = os.getcwd()
-            scratch = os.path.dirname(script)
-            os.chdir(scratch) #KISTI doesn't allow job submission from home
+            os.chdir(sim_dir) #KISTI doesn't allow job submission from home
             res = exe("qsub {}".format(script), debug=True)
             os.chdir(cwd)
         if len(res[1]) == 0:

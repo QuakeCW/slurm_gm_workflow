@@ -124,6 +124,7 @@ def submit_task(
         # whereas im_plot does.
         if not os.path.isdir(verification_dir):
             os.mkdir(verification_dir)
+        #TO DO: Fix this for qsub (similar to clean_up)
         plot_ts_template = (
             "--export=CUR_ENV -o {output_file} -e {error_file} {script_location} "
             "{xyts_path} {srf_path} {output_movie_path} {mgmt_db_loc} {run_name}"
@@ -142,7 +143,8 @@ def submit_task(
             error_file=os.path.join(sim_dir, "%x_%j.err"),
         )
         submit_sl_script(
-            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.plot_ts].value
+            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.plot_ts].value,
+            sim_dir=sim_dir
         )
 
     elif proc_type == const.ProcessType.HF.value:
@@ -209,6 +211,7 @@ def submit_task(
             logger=task_logger,
         )
     elif proc_type == const.ProcessType.IM_plot.value:
+        #TO DO: Fix this for qsub (similar to clean_up)
         im_plot_template = (
             "--export=CUR_ENV -o {output_file} -e {error_file} {script_location} "
             "{csv_path} {station_file_path} {output_xyz_dir} {srf_path} {model_params_path} {mgmt_db_loc} {run_name}"
@@ -227,9 +230,11 @@ def submit_task(
             error_file=os.path.join(sim_dir, "%x_%j.err"),
         )
         submit_sl_script(
-            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.IM_plot].value
+            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.IM_plot].value,
+            sim_dir=sim_dir
         )
     elif proc_type == const.ProcessType.rrup.value:
+        #TO DO: Fix this for qsub (similar to clean_up)
         submit_sl_script(
             "--output {} --error {} {} {} {}".format(
                 os.path.join(sim_dir, "%x_%j.out"),
@@ -239,6 +244,7 @@ def submit_task(
                 root_folder,
             ),
             target_machine=JOB_RUN_MACHINE[const.ProcessType.rrup].value,
+            sim_dir=sim_dir,
         )
     elif proc_type == const.ProcessType.Empirical.value:
         extended_period_switch = "-e" if extended_period else ""
@@ -251,28 +257,31 @@ def submit_task(
             target_machine=JOB_RUN_MACHINE[const.ProcessType.Empirical].value,
         )
         submit_sl_script(
-            sl_script, target_machine=JOB_RUN_MACHINE[const.ProcessType.Empirical].value
+            sl_script, target_machine=JOB_RUN_MACHINE[const.ProcessType.Empirical].value,
+            si_dir=sim_dir
         )
     elif proc_type == const.ProcessType.Verification.value:
         pass
     elif proc_type == const.ProcessType.clean_up.value:
         clean_up_template = (
-            "--export=CUR_ENV -o {output_file} -e {error_file} {script_location} "
-            "{sim_dir} {srf_name} {mgmt_db_loc} "
-        )
+            "{script_location} -o {output_file} -e {error_file}"
+            " -v SIM_DIR='{sim_dir}',SRF_NAME='{srf_name}',MGMT_DB_LOC='{mgmt_db_loc}'"
+        ) #qsub takes arguments throuvh -v option
         script = clean_up_template.format(
             sim_dir=sim_dir,
             srf_name=run_name,
             mgmt_db_loc=root_folder,
-            script_location=os.path.expandvars("$gmsim/workflow/scripts/clean_up.sl"),
-            output_file=os.path.join(sim_dir, "%x_%j.out"),
-            error_file=os.path.join(sim_dir, "%x_%j.err"),
+            script_location=os.path.expandvars("$gmsim/workflow/scripts/clean_up.sh"),
+            output_file=os.path.join(sim_dir, "cleanup.out"),
+            error_file=os.path.join(sim_dir, "cleanup.err"),
         )
         submit_sl_script(
-            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.clean_up].value
+            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.clean_up].value,
+            sim_dir=sim_dir,
         )
     elif proc_type == const.ProcessType.LF2BB.value:
         params = utils.load_sim_params(os.path.join(sim_dir, "sim_params.yaml"))
+        #TO DO: Fix this for qsub (similar to clean_up)
         submit_sl_script(
             "--output {} --error {} {} {} {} {} {}".format(
                 os.path.join(sim_dir, "%x_%j.out"),
@@ -288,9 +297,11 @@ def submit_task(
                 ),
             ),
             target_machine=JOB_RUN_MACHINE[const.ProcessType.LF2BB].value,
+            sim_dir=sim_dir,
         )
     elif proc_type == const.ProcessType.HF2BB.value:
         params = utils.load_sim_params(os.path.join(sim_dir, "sim_params.yaml"))
+        #TO DO: Fix this for qsub (similar to clean_up)
         submit_sl_script(
             "--output {} --error {} {} {} {} {}".format(
                 os.path.join(sim_dir, "%x_%j.out"),
@@ -303,8 +314,10 @@ def submit_task(
                 ),
             ),
             target_machine=JOB_RUN_MACHINE[const.ProcessType.HF2BB].value,
+            sim_dir=sim_dir,
         )
     elif proc_type == const.ProcessType.plot_srf.value:
+        #TO DO: Fix this for qsub (similar to clean_up)
         plot_srf_template = (
             "--export=CUR_ENV -o {output_file} -e {error_file} {script_location} "
             "{srf_dir} {output_dir} {mgmt_db_loc} {run_name}"
@@ -319,7 +332,8 @@ def submit_task(
             error_file=os.path.join(sim_dir, "%x_%j.err"),
         )
         submit_sl_script(
-            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.plot_srf].value
+            script, target_machine=JOB_RUN_MACHINE[const.ProcessType.plot_srf].value,
+            sim_dir=sim_dir
         )
     elif proc_type == const.ProcessType.advanced_IM.value:
         params = utils.load_sim_params(
@@ -408,6 +422,7 @@ def run_main_submit_loop(
             else:
 #                squeued_tasks.pop(0) #no need for non-nesi
                 n_tasks_to_run[hpc] = n_runs[hpc] - len(squeued_tasks)
+                main_logger.debug(f" task in queue {squeued_tasks}") #used for debug
                 if len(squeued_tasks) > 0:
                     main_logger.debug(
                         "There was at least one job in squeue, resetting timeout"
