@@ -8,6 +8,13 @@ from qcore.utils import load_sim_params
 from shared_workflow.shared import write_file
 from shared_workflow.shared_defaults import recipe_dir
 
+env = Environment()
+
+def is_true(bool):
+    return bool
+
+env.tests['true'] = is_true
+
 
 def write_sl_script(
     write_directory,
@@ -19,6 +26,7 @@ def write_sl_script(
     command_template_parameters,
     cmd_args,
     add_args={},
+    multiprocessing=False,
 ):
     params = load_sim_params(os.path.join(sim_dir, "sim_params.yaml"))
     common_header_dict = {
@@ -29,6 +37,7 @@ def write_sl_script(
         "account": cmd_args.account,
         "target_host": cmd_args.machine,
         "write_directory": write_directory,
+        "multiprocessing": multiprocessing,
     }
     common_template_params = {
         "sim_dir": sim_dir,
@@ -53,7 +62,7 @@ def write_sl_script(
     script_name = os.path.abspath(
         os.path.join(
             write_directory,
-            "{}_{}.sh".format(
+            "{}_{}.pbs".format(
                 script_prefix, datetime.now().strftime(const.TIMESTAMP_FORMAT)
             ),
         )
@@ -117,6 +126,7 @@ def resolve_header(
     target_host=host,
     mail="test@test.com",
     write_directory=".",
+    multiprocessing=False,
 ):
     if partition is None:
         partition = get_partition(target_host, convert_time_to_hours(wallclock_limit))
@@ -135,6 +145,7 @@ def resolve_header(
         exe_time=exe_time,
         partition=partition,
         write_dir=write_directory,
+        multiprocessing=multiprocessing,
     )
     return header
 

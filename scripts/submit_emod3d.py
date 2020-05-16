@@ -50,6 +50,7 @@ def main(
             if est_model is not None
             else os.path.join(workflow_config["estimation_models_dir"], "LF")
         )
+        logger.debug(params)
         est_core_hours, est_run_time, est_cores = est.est_LF_chours_single(
             int(params.nx), int(params.ny), int(params.nz), nt, args.ncore, model, True
         )

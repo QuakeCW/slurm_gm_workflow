@@ -189,6 +189,7 @@ if __name__ == "__main__":
 
     if hasattr(args, "version") and args.version is not None:
         args.sim_bin = binary_version.get_hf_binmod(args.version)
+        print(args.sim_bin)
 
     if is_master:
         logger.debug("=" * 50)

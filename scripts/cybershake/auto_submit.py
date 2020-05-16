@@ -126,8 +126,12 @@ def submit_task(
             os.mkdir(verification_dir)
         #TO DO: Fix this for qsub (similar to clean_up)
         plot_ts_template = (
-            "--export=CUR_ENV -o {output_file} -e {error_file} {script_location} "
-            "{xyts_path} {srf_path} {output_movie_path} {mgmt_db_loc} {run_name}"
+            "{script_location} -o {output_file} -e {error_file}"
+            " -v XYTS_PATH='{xyts_path}'"
+            ",SRF_PATH='{srf_path}'"
+            ",OUTPUT_MOVIE_PATH='{output_movie_path}'"
+            ",MGMT_DB_LOC='{mgmt_db_loc}'"
+            ",SRF_NAME='{run_name}'"
         )
         script = plot_ts_template.format(
             xyts_path=os.path.join(
@@ -138,9 +142,9 @@ def submit_task(
             output_movie_path=os.path.join(verification_dir, run_name),
             mgmt_db_loc=root_folder,
             run_name=run_name,
-            script_location=os.path.expandvars("$gmsim/workflow/scripts/plot_ts.sl"),
-            output_file=os.path.join(sim_dir, "%x_%j.out"),
-            error_file=os.path.join(sim_dir, "%x_%j.err"),
+            script_location=os.path.expandvars("$gmsim/workflow/scripts/plot_ts.pbs"),
+            output_file=os.path.join(sim_dir, "plot_ts.out"),
+            error_file=os.path.join(sim_dir, "plot_ts.err"),
         )
         submit_sl_script(
             script, target_machine=JOB_RUN_MACHINE[const.ProcessType.plot_ts].value,
@@ -211,10 +215,12 @@ def submit_task(
             logger=task_logger,
         )
     elif proc_type == const.ProcessType.IM_plot.value:
-        #TO DO: Fix this for qsub (similar to clean_up)
         im_plot_template = (
-            "--export=CUR_ENV -o {output_file} -e {error_file} {script_location} "
-            "{csv_path} {station_file_path} {output_xyz_dir} {srf_path} {model_params_path} {mgmt_db_loc} {run_name}"
+            "{script_location} -o {output_file} -e {error_file}"
+            " -v CSV_PATH='{csv_path}',STATION_FILE_PATH='{station_file_path}'"
+            ",OUTPUT_XYZ_DIR='{output_xyz_dir}',SRF_PATH='{srf_path}'"
+            ",MODEL_PARAMS_PATH='{model_params_path}',MGMT_DB_LOC='{mgmt_db_loc}'"
+            ",RUN_NAME='{run_name}'"
         )
         params = utils.load_sim_params(os.path.join(sim_dir, "sim_params.yaml"))
         script = im_plot_template.format(
@@ -225,7 +231,7 @@ def submit_task(
             model_params_path=params.MODEL_PARAMS,
             mgmt_db_loc=root_folder,
             run_name=run_name,
-            script_location=os.path.expandvars("$gmsim/workflow/scripts/im_plot.sl"),
+            script_location=os.path.expandvars("$gmsim/workflow/scripts/im_plot.pbs"),
             output_file=os.path.join(sim_dir, "%x_%j.out"),
             error_file=os.path.join(sim_dir, "%x_%j.err"),
         )
@@ -234,12 +240,11 @@ def submit_task(
             sim_dir=sim_dir
         )
     elif proc_type == const.ProcessType.rrup.value:
-        #TO DO: Fix this for qsub (similar to clean_up)
         submit_sl_script(
-            "--output {} --error {} {} {} {}".format(
-                os.path.join(sim_dir, "%x_%j.out"),
-                os.path.join(sim_dir, "%x_%j.err"),
-                os.path.expandvars("$gmsim/workflow/scripts/calc_rrups_single.sl"),
+            "{} -o {} -e {} -v REL='{}',MGMT_DB_LOC='{}'".format(
+                os.path.expandvars("$gmsim/workflow/scripts/calc_rrups_single.pbs"),
+                os.path.join(sim_dir, "rrup.out"),
+                os.path.join(sim_dir, "rrup.err"),
                 sim_dir,
                 root_folder,
             ),
@@ -271,7 +276,7 @@ def submit_task(
             sim_dir=sim_dir,
             srf_name=run_name,
             mgmt_db_loc=root_folder,
-            script_location=os.path.expandvars("$gmsim/workflow/scripts/clean_up.sh"),
+            script_location=os.path.expandvars("$gmsim/workflow/scripts/clean_up.pbs"),
             output_file=os.path.join(sim_dir, "cleanup.out"),
             error_file=os.path.join(sim_dir, "cleanup.err"),
         )

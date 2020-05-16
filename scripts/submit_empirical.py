@@ -75,7 +75,8 @@ def generate_sl(
         target_host=target_machine,
         partition=None,
         additional_lines="",
-        template_path="slurm_header.cfg",
+#        template_path="slurm_header.cfg",
+        template_path="pbs_header.cfg",
         write_directory=out_dir,
     )
     context = generate_context(
