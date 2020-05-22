@@ -212,7 +212,6 @@ def submit_im_calc_slurm(
                 "machine": options_dict["machine"],
             }
         ),
-        multiprocessing=True
     )
 
     submit_yes = (

@@ -129,7 +129,7 @@ def submit_task(
             "{script_location} -o {output_file} -e {error_file}"
             " -v XYTS_PATH='{xyts_path}'"
             ",SRF_PATH='{srf_path}'"
-            ",OUTPUT_MOVIE_PATH='{output_movie_path}'"
+            ",OUTPUT_TS_PATH='{output_movie_path}'"
             ",MGMT_DB_LOC='{mgmt_db_loc}'"
             ",SRF_NAME='{run_name}'"
         )
@@ -324,17 +324,19 @@ def submit_task(
     elif proc_type == const.ProcessType.plot_srf.value:
         #TO DO: Fix this for qsub (similar to clean_up)
         plot_srf_template = (
-            "--export=CUR_ENV -o {output_file} -e {error_file} {script_location} "
-            "{srf_dir} {output_dir} {mgmt_db_loc} {run_name}"
+            "{script_location} -o {output_file} -e {error_file}"
+            " -v SRF_DIR='{srf_dir}',OUTPUT_DIR='{output_dir}'"
+            ",MGMT_DB_LOC='{mgmt_db_loc}',SRF_NAME='{run_name}'"
         )
+
         script = plot_srf_template.format(
             srf_dir=sim_struct.get_srf_dir(root_folder, run_name),
             output_dir=sim_struct.get_sources_plot_dir(root_folder, run_name),
             mgmt_db_loc=root_folder,
             run_name=run_name,
-            script_location=os.path.expandvars("$gmsim/workflow/scripts/plot_srf.sl"),
-            output_file=os.path.join(sim_dir, "%x_%j.out"),
-            error_file=os.path.join(sim_dir, "%x_%j.err"),
+            script_location=os.path.expandvars("$gmsim/workflow/scripts/plot_srf.pbs"),
+            output_file=os.path.join(sim_dir, "plot_srf.out"),
+            error_file=os.path.join(sim_dir, "plot_srf.err"),
         )
         submit_sl_script(
             script, target_machine=JOB_RUN_MACHINE[const.ProcessType.plot_srf].value,

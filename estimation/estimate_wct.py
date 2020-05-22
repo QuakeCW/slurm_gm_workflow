@@ -151,6 +151,8 @@ def estimate_LF_chours(
         data, model, model_type, const.LF_DEFAULT_NCORES, lf_svr_input_data=svr_data
     )
 
+    core_hours = core_hours * 4
+
     # data[:, -1] represents the last column of the ndarray data, which contains the number of cores for each task
     wct = core_hours / data[:, -1]
 
