@@ -77,6 +77,9 @@ def get_row(json_file):
                         and ProcessType.from_str(proc_type).is_hyperth
                     ):
                         columns.append((proc_type, metadata_field))
+                        #print(data_dict[proc_type][metadata_field], metadata_field, proc_type, type(data_dict[proc_type][metadata_field]))
+                        if data_dict[proc_type][metadata_field] == "":
+                            data_dict[proc_type][metadata_field] = 0
                         data.append(data_dict[proc_type][metadata_field] / 2.0)
                         continue
 

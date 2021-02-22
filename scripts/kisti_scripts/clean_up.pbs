@@ -10,17 +10,15 @@
 #PBS -l walltime=00:30:00
 #PBS -W sandbox=PRIVATE
 
-module purge
-module add gcc/7.2.0 openmpi/3.1.0 craype-network-opa craype-mic-knl
-export gmsim_root=/home01/hpc11a02/gmsim
-export PYTHONPATH=$gmsim_root/Environments/nurion/workflow
-source $gmsim_root/Environments/nurion/virt_envs/python3_nurion/bin/activate
 export SLURM_JOB_ID="${PBS_JOBID/.pbs/}"
 
 ## qsub supply the following variables with -v option
 #SIM_DIR=$1
 #SRF_NAME=$2
 #MGMT_DB_LOC=$3
+
+# making sure its using the correct environment
+activate_env $gmsim
 
 script_start=`date`
 echo "script started running at: $script_start"

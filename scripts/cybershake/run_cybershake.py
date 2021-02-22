@@ -39,6 +39,7 @@ def run_automated_workflow(
     wrapper_logger: Logger,
     debug: bool,
     alert_url=None,
+    max_loop_time=None,
 ):
     """Runs the automated workflow. Beings the queue monitor script and the script for tasks that apply to all
     realisations. Then while the all realisation thread is running go through each pattern and run all tasks that are
@@ -151,6 +152,7 @@ def run_automated_workflow(
         kwargs={
             "main_logger": bulk_logger,
             "cycle_timeout": 2 * len(tasks_to_run_with_pattern_and_logger) + 2,
+            "max_loop_time": max_loop_time,
         },
     )
     wrapper_logger.info("Created main auto_submit thread")
@@ -188,6 +190,7 @@ def run_automated_workflow(
                 (lf_est_model, hf_est_model, bb_est_model, im_est_model),
                 main_logger=pattern_logger,
                 cycle_timeout=1,
+                max_loop_time=max_loop_time,
             )
     bulk_auto_submit_thread.join()
     wrapper_logger.info(
@@ -291,6 +294,8 @@ def main():
     parser.add_argument(
         "--alert_url", help="the url to slack alert channel", default=None
     )
+    parser.add_argument("--max_loop_time", type=int,help="the maximum time to run loops, in seconds",default=None)
+
     args = parser.parse_args()
 
     wrapper_logger = qclogging.get_logger(name="cybershake_wrapper", threaded=True)
@@ -370,6 +375,7 @@ def main():
         wrapper_logger,
         args.debug,
         alert_url=args.alert_url,
+        max_loop_time = args.max_loop_time
     )
 
 

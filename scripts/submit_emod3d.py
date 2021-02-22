@@ -51,8 +51,10 @@ def main(
                 platform_config[const.PLATFORM_CONFIG.ESTIMATION_MODELS_DIR.name], "LF"
             )
         )
+        # 6 is the minimun size in emod3d c-code
+        max_cores = params.nx//6 * params.ny//6 * params.nz//6
         est_core_hours, est_run_time, est_cores = est.est_LF_chours_single(
-            int(params.nx), int(params.ny), int(params.nz), nt, args.ncore, model, True
+            int(params.nx), int(params.ny), int(params.nz), nt, args.ncore, max_cores, model, True
         )
         # scale up the est_run_time if it is a re-run (with check-pointing)
         # otherwise do nothing

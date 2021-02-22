@@ -117,6 +117,16 @@ def create_run_params(
         e3d_dict["grid_file"] = params.GRIDFILE
         e3d_dict["model_params"] = params.MODEL_PARAMS
 
+        rel = params["name"]
+        vm_dir = params["vel_mod_dir"]
+        pert_path = os.path.join(vm_dir, f"{rel}.pertb")
+
+        if os.path.exists(pert_path):
+            # TODO: make model_style enums in qcore.const
+            e3d_dict["model_style"] = 3
+            e3d_dict["pertbfile"] = pert_path
+
+
         if params.emod3d:
             for key, value in params.emod3d.items():
                 if key in e3d_dict:

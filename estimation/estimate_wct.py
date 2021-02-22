@@ -57,6 +57,7 @@ def est_LF_chours_single(
     nz: int,
     nt: int,
     ncores: int,
+    max_cores: int,
     model: Union[str, EstModel],
     scale_ncores: bool,
     node_time_th_factor: float = 0.25,
@@ -99,6 +100,7 @@ def est_LF_chours_single(
         data,
         model,
         scale_ncores,
+        np.asarray([max_cores]),
         node_time_th_factor=node_time_th_factor,
         model_type=model_type,
     )
@@ -110,6 +112,7 @@ def estimate_LF_chours(
     data: np.ndarray,
     model: Union[str, EstModel],
     scale_ncores: bool,
+    max_cores: np.ndarray,
     node_time_th_factor: float = 0.25,
     model_type: const.EstModelType = DEFAULT_MODEL_TYPE,
 ):
@@ -157,13 +160,13 @@ def estimate_LF_chours(
     )
 
     # data[:, -1] represents the last column of the ndarray data, which contains the number of cores for each task
-    wct = core_hours / data[:, -1]
+    wct = core_hours / data[:, -1] 
 
-    if scale_ncores and np.any(
+    if scale_ncores and (np.any(
         wct > (node_time_th_factor * data[:, -1] / PHYSICAL_NCORES_PER_NODE)
-    ):
+    ) or np.any(data[:, -1] > max_cores)):
         # Want to scale, and at least one job exceeds the allowable time for the given number of cores
-        return scale_core_hours(core_hours, data, node_time_th_factor)
+        return scale_core_hours(core_hours, data, node_time_th_factor, max_cores)
     else:
         return core_hours, core_hours / data[:, -1], (data[:, -1])
 
@@ -173,6 +176,7 @@ def est_HF_chours_single(
     nsub_stoch: float,
     nt: int,
     n_logical_cores: int,
+    max_cores: int,
     model: Union[str, EstModel],
     scale_ncores: bool,
     node_time_th_factor: float = 1.0,
@@ -206,6 +210,7 @@ def est_HF_chours_single(
         data,
         model,
         scale_ncores,
+        np.asarray([max_cores]),
         node_time_th_factor=node_time_th_factor,
         model_type=model_type,
         logger=logger,
@@ -218,6 +223,7 @@ def estimate_HF_chours(
     data: np.ndarray,
     model: Union[str, EstModel],
     scale_ncores: bool,
+    max_cores: np.ndarray,
     node_time_th_factor: float = 1.0,
     model_type: const.EstModelType = DEFAULT_MODEL_TYPE,
     logger: Logger = get_basic_logger(),
@@ -264,19 +270,19 @@ def estimate_HF_chours(
         logger=logger,
     )
 
-    wct = core_hours / data[:, -1]
-    if scale_ncores and np.any(
+    wct = core_hours / data[:, -1] 
+    if scale_ncores and (np.any(
         wct > (node_time_th_factor * data[:, -1] / PHYSICAL_NCORES_PER_NODE)
-    ):
+    ) or np.any(data[:, -1] > max_cores)):
         core_hours, wct, data[:, -1] = scale_core_hours(
-            core_hours, data, node_time_th_factor
+            core_hours, data, node_time_th_factor, max_cores
         )
 
     return core_hours, wct, data[:, -1] * hyperthreading_factor
 
 
 def scale_core_hours(
-    core_hours: np.ndarray, data: np.ndarray, node_time_th_factor: float
+    core_hours: np.ndarray, data: np.ndarray, node_time_th_factor: float, max_cores: np.ndarray
 ):
     """
     Estimate and update the number of nodes until
@@ -314,6 +320,9 @@ def scale_core_hours(
     n_cpus: np.ndarray of ints
         The number of cores to use, returns the argument n_cores
         if scale_ncores is not set. Otherwise returns the updated ncores.
+    max_cores: np.ndarry of ints
+        the max number of cores to use, limits how high n_cpus can be
+        changes core_hours as well, if n_cpus has been changed
     """
 
     # All computation is in terms of nodes
@@ -328,6 +337,10 @@ def scale_core_hours(
         )
     n_nodes = np.minimum(np.maximum(estimated_nodes, n_nodes), MAX_NODES_PER_JOB)
     n_cpus = n_nodes * PHYSICAL_NCORES_PER_NODE
+    n_cpus = np.minimum(n_cpus, max_cores)
+    mask = n_cpus == max_cores
+    if np.any(mask):
+        core_hours[mask] = core_hours[mask]*n_cpus[mask]/data[mask, -1]
     return core_hours, core_hours / n_cpus, n_cpus
 
 

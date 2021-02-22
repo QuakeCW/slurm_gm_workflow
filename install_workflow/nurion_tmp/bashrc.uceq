@@ -1,0 +1,45 @@
+
+###
+# Functions to load HPC environments
+###
+
+activate_env () {
+    env_path=${1?Error: "The environment path has to be provided, e.g. ..../Environments/test_env"}
+
+    if [[ `hostname` =~ 'mahuika' ]] || [[ $HOSTNAME =~ 'wb' ]];then
+        hpc='mahuika'
+    elif [[ `hostname` =~ 'maui' ]] || [[ $HOSTNAME =~ 'ni' ]];then
+        hpc='maui'
+    fi  
+
+    if [[ -z $hpc ]];then
+        echo "hpc is not defined"
+    else
+        source ${env_path}/workflow/install_workflow/helper_functions/activate_env.sh ${env_path} ${hpc}
+    fi
+}
+
+deactivate_env () {
+    if [[ ! -z ${CUR_ENV} ]]; then
+        source ${CUR_ENV}/workflow/install_workflow/helper_functions/deactivate_env.sh
+    else
+        echo "You do not appear to be in an environment? Use deactivate_virtevnv, to deactivate a python virtual env"
+    fi  
+}
+export SCRATCH=/scratch/hpc11a02
+export hpc=nurion
+export nobackup=/scratch/hpc11a02/nobackup
+export project=/home01/hpc11a02/gmsim
+export RunFolder=/scratch/hpc11a02/gmsim/RunFolder
+export runfolder=/scratch/hpc11a02/gmsim/RunFolder
+export FFTW_DIR=/home01/hpc11a02/gmsim/Environments/nurion/ROOT/local/gnu
+
+module load python/3.7 craype-mic-knl gcc/7.2.0 openmpi/3.1.0 git
+
+export PATH=/home01/hpc11a02/pkg/src/Velocity-Model/:$PATH:/home01/hpc11a02/gmsim/Environments/nurion/ROOT/bin:/home01/hpc11a02/gmsim/Environments/nurion/ROOT/local/gnu/bin:/home01/hpc11a02/gmsim/Environments/nurion/virt_envs/python3_nurion/local/pkg/ffmpeg
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home01/hpc11a02/gmsim/Environments/nurion/ROOT/local/gnu/lib
+
+shopt -u progcomp
+umask 002
+

@@ -345,6 +345,7 @@ def run_main_submit_loop(
     models_tuple: Tuple[est.EstModel],
     main_logger: Logger = qclogging.get_basic_logger(),
     cycle_timeout=1,
+    max_loop_time=None,
 ):
     mgmt_queue_folder = sim_struct.get_mgmt_db_queue(root_folder)
     mgmt_db = MgmtDB(sim_struct.get_mgmt_db(root_folder))
@@ -365,9 +366,10 @@ def run_main_submit_loop(
     main_logger.debug("extended_period set to {}".format(extended_period))
 
     time_since_something_happened = cycle_timeout
+    loop_started_time = datetime.now()
 
     while time_since_something_happened > 0:
-        main_logger.debug(
+        main_logger.info(
             "time_since_something_happened is now {}".format(
                 time_since_something_happened
             )
@@ -486,8 +488,20 @@ def run_main_submit_loop(
                 extended_period=extended_period,
                 models=models_tuple,
             )
-        main_logger.debug("Sleeping for {} second(s)".format(sleep_time))
-        time.sleep(sleep_time)
+        #force the loop to stop if it reaches close to max_loop_time
+        if (max_loop_time is not None):
+            #check if max time meet
+            time_passed = (datetime.now() - loop_started_time).total_seconds()
+            main_logger.info(f"time passed : {time_passed}, max_loop_time {max_loop_time}")
+            if time_passed > max_loop_time*0.9:
+                main_logger.debug("running close to max_loop_time: {}, stopping loop".format(max_loop_time))
+                time_since_something_happened = -1
+            else:
+                main_logger.debug("Sleeping for {} second(s)".format(sleep_time))
+                time.sleep(sleep_time)
+        else:
+            main_logger.debug("Sleeping for {} second(s)".format(sleep_time))
+            time.sleep(sleep_time)        
     main_logger.info("Nothing was running or ready to run last cycle, exiting now")
 
 

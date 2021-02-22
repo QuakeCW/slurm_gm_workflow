@@ -18,12 +18,12 @@ class Pbs(AbstractScheduler):
         :return: A tuple containing the expected metadata
         """
         cmd = f"qstat -f -F json -x {db_running_task.job_id}"
-        out, err = self._run_command_and_wait(cmd, shell=True)
+        out, err = self._run_command_and_wait(cmd)
         tasks_dict = json.loads(out)["Jobs"]
         assert (
             len(tasks_dict.keys()) == 1
         ), f"Too many tasks returned by qstat: {tasks_dict.keys()}"
-        task_name = list(tasks_dict.keys()[0])
+        task_name = list(tasks_dict.keys())[0]
         task_dict = tasks_dict[task_name]
         try:
             submit_time = task_dict["ctime"].replace(" ", "_")
@@ -68,9 +68,9 @@ class Pbs(AbstractScheduler):
 
         cwd = os.getcwd()
         os.chdir(sim_dir)  # KISTI doesn't allow job submission from home
-        out, err = self._run_command_and_wait(f"qsub {script_location}")
-        os.chdir(cwd)
+        out, err = self._run_command_and_wait(f"qsub -V {script_location}")
         self.logger.debug((out, err))
+        os.chdir(cwd)
 
         if len(err) != 0:
             raise self.raise_exception(
@@ -156,4 +156,5 @@ class Pbs(AbstractScheduler):
     @staticmethod
     def process_arguments(script_path: str, arguments: Dict[str, str]):
         args = [x for part in arguments.items() for x in part]
-        return f"-V {' '.join(args)} {script_path} "
+        formatted_args = [f"{args[i]}={args[i+1]}"for i in range(0, len(args), 2)]
+        return f"-v {','.join(formatted_args)} {script_path} "

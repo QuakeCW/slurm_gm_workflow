@@ -98,6 +98,7 @@ def main(
             nsub_stoch,
             nt,
             args.ncore,
+            fd_count,
             est_model,
             scale_ncores=SCALE_NCORES,
             logger=logger,
