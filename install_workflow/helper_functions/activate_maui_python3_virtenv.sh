@@ -4,7 +4,7 @@
 module del cray-python/2.7.15.1
 
 # Load python3 module
-module load cray-python/3.6.5.1
+#module load cray-python/3.6.5.1
 
 # Activates the specified python3 virtual environment.
 # Note: Resets the PHYTONPATH

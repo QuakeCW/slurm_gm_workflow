@@ -18,11 +18,12 @@ else
 fi
 
 # source modules required for tools if exist
-module_requirments=$(python -c "from qcore.config import module_requirments; print(module_requirments)")
-if [[ -f $module_requirments ]];then
-    source $module_requirments
+#export PYTHONPATH=${env_path}/qcore:$PYTHONPATH
+module_requirements=$(python -c "from qcore.config import module_requirements; print(module_requirements)")
+if [[ -f $module_requirements ]];then
+    source $module_requirements
 else
-    echo "no module requirements found at $module_requirments, binaries may not run properly"
+    echo "no module requirements found at $module_requirements, binaries may not run properly"
 fi
 
 # PYTHONPATH for workflow
