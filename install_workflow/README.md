@@ -24,7 +24,7 @@ can be created as follows:
 2) Navigate to ".../slurm_gm_workflow/install_workflow" 
 3) Run 
     ```bash
-    ./create_env.sh environment_name config_to_use
+    ./create_env_maui.sh environment_name config_to_use
     ```
     where a default config (env_config.json) is located in the same directory, which should
     work without requiring any changes.  
