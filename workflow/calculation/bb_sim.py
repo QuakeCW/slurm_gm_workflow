@@ -52,6 +52,11 @@ def args_parser(cmd=None):
         action="store_true",
     )
     arg(
+        "--no-hf-amp",
+        help="Disable site amplification for HF component",
+        action="store_true",
+    )
+    arg(
         "--site-amp",
         help="Choose the site-amp model to be used",
         default="CB14",
@@ -123,6 +128,16 @@ def main():
     else:
         ampdeamp_lf = ampdeamp
         lf_amp_function = amp_function
+
+    if args.no_hf_amp:
+        def ampdeamp_hf(series, *x, **y):
+            return series
+
+        def hf_amp_function(*x, **y):
+            pass
+    else:
+        ampdeamp_hf = ampdeamp
+        hf_amp_function = amp_function
 
     # load data stores
     lf = timeseries.LFSeis(args.lf_dir)
@@ -439,7 +454,7 @@ def main():
             pga = np.max(np.abs(hf_acc), axis=0) / 981.0
             # ideally remove loop # Could reduce to single components?
             for c in range(N_COMPONENTS):
-                hf_amp_val = amp_function(
+                hf_amp_val = hf_amp_function(
                     bb_dt,
                     n2,
                     stat.vs,
@@ -462,7 +477,7 @@ def main():
                     version=site_amp_version,
                 )
                 hf_filtered = bwfilter(
-                    ampdeamp(
+                    ampdeamp_hf(
                         hf_acc[:, c],
                         hf_amp_val,
                         amp=True,
