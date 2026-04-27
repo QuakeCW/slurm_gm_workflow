@@ -14,7 +14,7 @@ dzout: 1
 dzts: 1
 elas_only: 0
 enable_output_dump: 1
-enable_restart: 1
+enable_restart: 0
 ffault: 2
 fhi: 0.0
 fmax: 25
@@ -62,3 +62,4 @@ ts_yz: 0
 tzero: 0.6
 useqsqp: 0
 vmodel_swapb: 0
+log_all_procs: 0

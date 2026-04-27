@@ -14,7 +14,7 @@ dzout: 1
 dzts: 1
 elas_only: 0
 enable_output_dump: 1
-enable_restart: 1
+enable_restart: 0
 ffault: 2
 fhi: 0.0
 fmax: 25
@@ -63,3 +63,4 @@ yseis: 0
 zseis: 0
 pertbfile: test
 
+log_all_procs: 0
