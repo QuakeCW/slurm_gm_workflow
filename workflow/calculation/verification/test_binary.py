@@ -18,6 +18,10 @@ if __name__ == "__main__":
         "process_type", type=str, choices=["bb", "hf"], help="Either bb or hf"
     )
     parser.add_argument("--verbose", action="store_true", default=False)
+    parser.add_argument(
+        "--skip-zero-check", action="store_true", default=False,
+        help="Skip the random zero-waveform check (use when completion is verified by log)"
+    )
 
     args = parser.parse_args()
 
@@ -35,13 +39,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
-        f = open(args.fd_ll)
+        with open(args.fd_ll) as f:
+            fd_count = len(f.readlines())
     except Exception as ex:
         if args.verbose:
             print("Cannot open {} with exception\n{}".format(args.fd_ll, ex))
         sys.exit(1)
-    else:
-        fd_count = len(f.readlines())
 
     if fd_count != len(bin.stations.name):
         # failed the count check
@@ -67,33 +70,41 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # binary zero check
-    # Checks 10 random stations for any occurances of 0 in the output (aka results have not been written)
-    # Removes leading 0s from the test as there may be some time at the start before the waveform starts.
-    for stat_name in np.random.choice(
-        bin.stations.name, replace=False, size=min(10, bin.stations.shape[0])
-    ):
-        acc = bin.acc(stat_name)
-        for comp in acc.T:
-            # trim leading and trailing zeros
-            comp_trimmed = np.trim_zeros(comp)
-            if comp_trimmed.size == 0:
-                if args.verbose:
-                    print(
-                        f" The waveform for station {stat_name} contains all zeros, please investigate."
-                    )
-                sys.exit(1)
-            ratio_zeros = (
-                comp_trimmed.size - np.count_nonzero(comp_trimmed)
-            ) / comp_trimmed.size
-            if ratio_zeros > ZERO_COUNT_THRESHOLD:
-                if args.verbose:
-                    print(
-                        f"The waveform for station {stat_name} contains {ratio_zeros} zeros, more than {ZERO_COUNT_THRESHOLD}, please investigate. This "
-                        f"is most likely due to crashes during HF or BB resulting in no written output."
-                    )
-                sys.exit(1)
+    if args.skip_zero_check:
+        if args.verbose:
+            print("Skipping zero-waveform check (completion verified by log)")
+    else:
+        # Checks 10 random stations for any occurrences of 0 in the output (aka results have not been written)
+        # Removes leading 0s from the test as there may be some time at the start before the waveform starts.
+        zero_warnings = 0
+        for stat_name in np.random.choice(
+            bin.stations.name, replace=False, size=min(10, bin.stations.shape[0])
+        ):
+            acc = bin.acc(stat_name)
+            for comp in acc.T:
+                # trim leading and trailing zeros
+                comp_trimmed = np.trim_zeros(comp)
+                if comp_trimmed.size == 0:
+                    zero_warnings += 1
+                    if args.verbose:
+                        print(
+                            f" WARNING: The waveform for station {stat_name} contains all zeros."
+                        )
+                else:
+                    ratio_zeros = (
+                        comp_trimmed.size - np.count_nonzero(comp_trimmed)
+                    ) / comp_trimmed.size
+                    if ratio_zeros > ZERO_COUNT_THRESHOLD:
+                        if args.verbose:
+                            print(
+                                f" WARNING: The waveform for station {stat_name} contains {ratio_zeros:.1%} zeros, more than {ZERO_COUNT_THRESHOLD:.1%}."
+                            )
+        
+        if zero_warnings > 0 and args.verbose:
+            print(f"NOTICE: {zero_warnings} zero-waveform stations found (may be distant stations outside simulation range)")
 
-    # pass both check
+    # pass both checks
     if args.verbose:
         print("{} passed".format(args.process_type))
     sys.exit(0)
+

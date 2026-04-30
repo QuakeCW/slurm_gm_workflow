@@ -23,12 +23,15 @@ fi
 
 fileCount=`ls -1|wc -l`
 
+# We will be using log_all_procs = 0, so only the first rank will produce .rlog
+# the below is commented out.
+
 #Check that the number of cores and number of rlog files is the same
-if [[ ! -z ${SLURM_CPUS_ON_NODE} ]] && [[ ${SLURM_NTASKS} != ${fileCount} ]]
-then
-    echo "Number of cores and number of log files mismatch"
-    exit 1
-fi
+#if [[ ! -z ${SLURM_CPUS_ON_NODE} ]] && [[ ${SLURM_NTASKS} != ${fileCount} ]]
+#then
+#    echo "Number of cores and number of log files mismatch"
+#    exit 1
+#fi
 
 rlog_count=0
 rlog_check=0

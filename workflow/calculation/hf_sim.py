@@ -160,7 +160,7 @@ def args_parser(cmd=None):
         help="dir containing site specific velocity models (1D). requires --site_specific",
     )
     # HF IN, line 14
-    arg("--vs-moho", help="depth to moho, < 0 for 999.9", type=float, default=999.9)
+    arg("--vs-moho", help="vs of moho layer, < 0 for 999.9", type=float, default=999.9)
     # HF IN, line 17
     arg("--fa_sig1", help="fourier amplitute uncertainty (1)", type=float, default=0.0)
     arg("--fa_sig2", help="fourier amplitude uncertainty (2)", type=float, default=0.0)
@@ -205,13 +205,12 @@ def args_parser(cmd=None):
 if __name__ == "__main__":
     args = None
     if is_master:
-
         try:
             args = args_parser()
         except SystemExit as e:
             print(e, flush=True)
             # invalid arguments or -h
-            comm.Abort()
+            comm.Abort(1)
 
         if args.sim_bin is None:
             args.sim_bin = binary_version.get_hf_binmod(args.version)
@@ -360,12 +359,12 @@ if __name__ == "__main__":
                         hff,
                         count=stations.size,
                         dtype={
-                            "names": ["vs"],
+                            "names": ["e_dist"],
                             "formats": ["f4"],
-                            "offsets": [20],
+                            "offsets": [16],
                             "itemsize": HEAD_STAT,
                         },
-                    )["vs"]
+                    )["e_dist"]
                     > 0
                 )
         except IOError:
@@ -382,7 +381,7 @@ if __name__ == "__main__":
                 logger.debug("Checkpoints found.")
                 initialise(check_only=True)
                 logger.error("HF Simulation already completed.")
-                comm.Abort()
+                comm.Abort(1)
             except AssertionError:
                 return
         # seems ok to continue simulation
@@ -394,7 +393,7 @@ if __name__ == "__main__":
         if station_mask is None or sum(station_mask) == stations.size:
             logger.debug("No valid checkpoints found. Starting fresh simulation.")
             initialise()
-            station_mask = np.ones(stations.size, dtype=np.bool)
+            station_mask = np.ones(stations.size, dtype=bool)
         else:
             try:
                 initialise(check_only=True)
@@ -408,7 +407,7 @@ if __name__ == "__main__":
                     "Simulation parameters mismatch. Starting fresh simulation."
                 )
                 initialise()
-                station_mask = np.ones(stations.size, dtype=np.bool)
+                station_mask = np.ones(stations.size, dtype=bool)
     station_mask = comm.bcast(station_mask, root=master)
     stations_todo = stations[station_mask]
     stations_todo_idx = np.arange(stations.size)[station_mask]
@@ -468,10 +467,11 @@ if __name__ == "__main__":
             )
         # add seekbyte for qcore adjusted version
         if bin_mod:
+            # Only add the dpath_perturbation for versions that has the tail version of .4
             if (
                 utils.compare_versions(args.version, "5.4.5.4") >= 0
                 and len(args.version.split(".")) >= 4
-                and utils.compare_versions(args.version.split(".")[3], "4") >= 0
+                and utils.compare_versions(args.version.split(".")[3], "4") == 0
             ):
                 hf_sim_args.append(str(args.dpath_pert))
             hf_sim_args.append(str(head_total + idx_0 * (nt * N_COMP * FLOAT_SIZE)))
@@ -504,7 +504,7 @@ if __name__ == "__main__":
 
             with open(f"hf_err_{idx_0}", "w") as e:
                 e.write(stderr)
-            comm.Abort()
+            comm.Abort(1)
 
         # write e_dist and vs to file
         with open(args.out_file, "r+b") as out:
@@ -514,20 +514,7 @@ if __name__ == "__main__":
                 e_dist[i].tofile(out)
                 vs.tofile(out)
 
-    def validate_end(idx_n):
-        """
-        Verify filesize has been extended by the correct amount.
-        idx_n: position (starting at 1) of last station to be completed
-        """
-        try:
-            assert os.stat(args.out_file).st_size == head_total + idx_n * block_size
-        except AssertionError:
-            msg = f"Expected size: {head_total + idx_n * block_size} bytes (last stat idx: {idx_n}), actual {os.stat(args.out_file).st_size} bytes."
-            logger.error("Validation failed: {}".format(msg))
-            comm.Abort()
-
-    # distribute work, must be sequential for optimisation,
-    # and for validation function above to be thread safe
+    # distribute work in a round-robin fashion across ranks for optimisation
     # if size=4, rank 0 takes [0,4,8...], rank 1 takes [1,5,9...], rank 2 takes [2,6,10...],
     # rank 3 takes [3,7,11...]
     work = stations_todo[rank::size]
@@ -551,19 +538,7 @@ if __name__ == "__main__":
             in_stats, 1, work_idx[s], v1d_path=v1d_path
         )  # passing in_stat with the seed adjustment work_idx[s]
 
-    if (
-        len(work_idx) > 0
-        and len(stations_todo_idx) > 0
-        and work_idx[-1] == stations_todo_idx[-1]
-    ):  # if this rank did the last station in the full list
-        validate_end(work_idx[-1] + 1)
-
     os.remove(in_stats)
-    print(
-        "Process {} of {} completed {} stations ({:.2f}).".format(
-            rank, size, work.size, MPI.Wtime() - t0
-        )
-    )
     logger.debug(
         "Process {} of {} completed {} stations ({:.2f}).".format(
             rank, size, work.size, MPI.Wtime() - t0
@@ -571,4 +546,12 @@ if __name__ == "__main__":
     )
     comm.Barrier()  # all ranks wait here until rank 0 arrives to announce all completed
     if is_master:
-        logger.debug("Simulation completed.")
+        actual_size = os.stat(args.out_file).st_size
+        if actual_size != file_size:
+            msg = f"CRITICAL: Final file size mismatch! Expected {file_size}, got {actual_size}"
+            print(msg, flush=True)
+            logger.error(msg)
+            comm.Abort(1)
+        else:
+            logger.debug("Simulation completed and size verified.")
+            print("✅ HF completed successfully", flush=True)
